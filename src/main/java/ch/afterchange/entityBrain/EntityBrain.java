@@ -2,7 +2,7 @@ package ch.afterchange.entityBrain;
 
 import ch.afterchange.entityBrain.util.EBLog;
 import ch.afterchange.entityBrain.util.ItemsAdderDetector;
-import dev.lone.itemsadder.api.ItemsAdder;
+import ch.afterchange.entityBrain.integration.itemsadder.ItemsAdderReadyListener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class EntityBrain extends JavaPlugin {
@@ -16,6 +16,10 @@ public final class EntityBrain extends JavaPlugin {
         EBLog.info(ItemsAdderDetector.isAvailable()
                 ? "ItemsAdder detected."
                 : "ItemsAdder not found: animations disabled.");
+
+        if(ItemsAdderDetector.isAvailable()) {
+            getServer().getPluginManager().registerEvents(new ItemsAdderReadyListener(), this);
+        }
     }
 
     @Override
