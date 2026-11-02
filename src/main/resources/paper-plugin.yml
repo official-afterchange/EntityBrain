@@ -5,6 +5,12 @@ version: '${version}'
 
 main: ch.afterchange.entityBrain.EntityBrain
 api-version: '26.2'
-load: STARTUP
 
 authors: [ AfterChange ]
+
+dependencies:
+    server:
+      ItemsAdder:
+        load: BEFORE
+        required: false
+        join-classpath: true
