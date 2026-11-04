@@ -27,7 +27,16 @@ public final class SpeciesRegistry {
             folder.mkdirs();
         }
 
-        File[] files = folder.listFiles((dir, name) -> name.endsWith(".yml"));
+        File exampleFile = new File(folder, "-slime_minion.yml");
+        if (!exampleFile.exists()) {
+            try {
+                plugin.saveResource("species/-slime_minion.yml", false);
+            } catch (IllegalArgumentException e) {
+                EBLog.error("Le fichier de ressource 'species/-slime_minion.yml' est introuvable dans le JAR du plugin !", e);
+            }
+        }
+
+        File[] files = folder.listFiles((dir, name) -> name.endsWith(".yml") && !name.startsWith("-"));
         if (files == null) files = new File[0];
         Arrays.sort(files);
 

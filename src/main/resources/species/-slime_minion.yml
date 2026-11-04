@@ -1,0 +1,32 @@
+# Species id = file name (lowercase letters, digits and underscores).
+display_name: "Slime Minion"
+
+entity:
+  # ItemsAdder custom entity used as the creature's body (namespace:name).
+  model: "slime_minion:slime_minion"
+
+# Values from 0.0 to 1.0.
+personality:
+  aggression: 0.30
+  courage: 0.50
+  curiosity: 0.70
+
+needs:
+  hunger: true
+  energy: true
+  fear: true
+
+behaviors:
+  - idle
+  - explore
+  - flee
+
+# Brain intention -> ItemsAdder animation name.
+# Use the names printed in the console when you spawn the entity.
+animations:
+  idle: idle
+  walk: walk
+
+hunting:
+  prey: []
+  enemies: []
