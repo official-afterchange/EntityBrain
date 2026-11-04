@@ -2,6 +2,8 @@ package ch.afterchange.entityBrain.core;
 
 import ch.afterchange.entityBrain.api.Brain;
 import ch.afterchange.entityBrain.api.BrainRegistry;
+import ch.afterchange.entityBrain.species.SpeciesDefinition;
+import ch.afterchange.entityBrain.species.SpeciesRegistry;
 import ch.afterchange.entityBrain.util.EBLog;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -16,23 +18,35 @@ public final class BrainRegistryImpl implements BrainRegistry {
 
     private final Map<UUID, EntityBrain> byEntity = new HashMap<>();
     private int nextSlot;
+    private final SpeciesRegistry speciesRegistry;
 
-    public EntityBrain attachNew(Entity entity, String speciesId) {
+    public BrainRegistryImpl(SpeciesRegistry speciesRegistry) {
+        this.speciesRegistry = speciesRegistry;
+    }
+
+    public EntityBrain attachNew(Entity entity, SpeciesDefinition species) {
         UUID brainId = UUID.randomUUID();
         PersistentDataContainer pdc = entity.getPersistentDataContainer();
-        pdc.set(BrainKeys.SPECIES, PersistentDataType.STRING, speciesId);
+        pdc.set(BrainKeys.SPECIES, PersistentDataType.STRING, species.id());
         pdc.set(BrainKeys.BRAIN_ID, PersistentDataType.STRING, brainId.toString());
-        return activate(entity, speciesId, brainId);
+        return activate(entity, species, brainId);
     }
 
     public EntityBrain restore(Entity entity) {
         PersistentDataContainer pdc = entity.getPersistentDataContainer();
-        String species = pdc.get(BrainKeys.SPECIES, PersistentDataType.STRING);
+        String speciesId = pdc.get(BrainKeys.SPECIES, PersistentDataType.STRING);
         String rawId = pdc.get(BrainKeys.BRAIN_ID, PersistentDataType.STRING);
-        if (species == null || rawId == null) return null;
+        if (speciesId == null || rawId == null) return null;
 
         EntityBrain existing = byEntity.get(entity.getUniqueId());
         if (existing != null) return existing;
+
+        SpeciesDefinition species = speciesRegistry.get(speciesId);
+        if (species == null) {
+            EBLog.warn("Entity " + entity.getUniqueId() + " uses unknown species '"
+                + speciesId + "': no brain activated.");
+            return null;
+        }
 
         UUID brainId;
         try {
@@ -73,13 +87,14 @@ public final class BrainRegistryImpl implements BrainRegistry {
         }
     }
 
-    private EntityBrain activate(Entity entity, String speciesId, UUID brainId) {
+    private EntityBrain activate(Entity entity, SpeciesDefinition species, UUID brainId) {
         keepAlive(entity);
         int slot = nextSlot++ % BrainScheduler.TICK_INTERVAL;
-        EntityBrain brain = new EntityBrain(brainId, new BrainContext(entity, speciesId), slot);
+        EntityBrain brain = new EntityBrain(brainId,
+                new BrainContext(entity, species, speciesRegistry), slot);
         byEntity.put(entity.getUniqueId(), brain);
         EBLog.debug("Brain " + brainId + " active for entity " + entity.getUniqueId()
-            + " (" + speciesId + ", slot " + slot + ")");
+            + " (" + species.id() + ", slot " + slot + ")");
         return brain;
     }
 

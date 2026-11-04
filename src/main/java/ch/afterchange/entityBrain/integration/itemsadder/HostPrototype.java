@@ -1,6 +1,8 @@
 package ch.afterchange.entityBrain.integration.itemsadder;
 
 import ch.afterchange.entityBrain.core.BrainRegistryImpl;
+import ch.afterchange.entityBrain.species.SpeciesDefinition;
+import ch.afterchange.entityBrain.species.SpeciesRegistry;
 import ch.afterchange.entityBrain.util.EBLog;
 import dev.lone.itemsadder.api.CustomEntity;
 import org.bukkit.Bukkit;
@@ -10,8 +12,9 @@ import org.bukkit.entity.Player;
 
 public class HostPrototype {
 
-    private static CustomEntity current;
     private static BrainRegistryImpl registry;
+    private static SpeciesRegistry species;
+    private static CustomEntity current;
 
     private HostPrototype() {}
 
@@ -27,7 +30,12 @@ public class HostPrototype {
         if (ce == null) return "Spawn failed";
         current = ce;
 
-        registry.attachNew(ce.getEntity(), "test");
+        SpeciesDefinition sp = species.findByModel(id);
+        if (sp == null) {
+            EBLog.warn("No species uses model " + id + ": spawned without a brain.");
+        } else {
+            registry.attachNew(ce.getEntity(), sp);
+        }
 
         Entity base = ce.getEntity();
         EBLog.info("Spawned " + ce.getNamespacedID()

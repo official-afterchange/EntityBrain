@@ -34,6 +34,7 @@ public final class EBLog {
     public static void error(String message, Throwable throwable) {
         logger.log(Level.SEVERE, message, throwable);
     }
+    public static void error(String message) { logger.severe(message); }
 
     public static void debug(String message) {
         if (debug) {

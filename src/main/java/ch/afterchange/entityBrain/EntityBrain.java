@@ -3,12 +3,14 @@ package ch.afterchange.entityBrain;
 import ch.afterchange.entityBrain.command.BrainsCommand;
 import ch.afterchange.entityBrain.command.CommandManager;
 import ch.afterchange.entityBrain.command.ReloadCommand;
+import ch.afterchange.entityBrain.command.SpeciesCommand;
 import ch.afterchange.entityBrain.core.BrainKeys;
 import ch.afterchange.entityBrain.core.BrainLifecycleListener;
 import ch.afterchange.entityBrain.core.BrainRegistryImpl;
 import ch.afterchange.entityBrain.core.BrainScheduler;
 import ch.afterchange.entityBrain.integration.itemsadder.HostPrototype;
 import ch.afterchange.entityBrain.integration.itemsadder.PrototypeCommand;
+import ch.afterchange.entityBrain.species.SpeciesRegistry;
 import ch.afterchange.entityBrain.util.Banner;
 import ch.afterchange.entityBrain.util.EBLog;
 import ch.afterchange.entityBrain.util.ItemsAdderDetector;
@@ -23,11 +25,10 @@ public final class EntityBrain extends JavaPlugin {
 
     private BrainRegistryImpl registry;
     private BrainScheduler scheduler;
+    private SpeciesRegistry speciesRegistry;
 
     @Override
     public void onEnable() {
-        System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
-
         saveDefaultConfig();
         EBLog.init(getLogger(), getConfig().getBoolean("debug", false));
 
@@ -41,9 +42,12 @@ public final class EntityBrain extends JavaPlugin {
                 : "ItemsAdder not found: animations disabled.");
 
         BrainKeys.init(this);
-        registry = new BrainRegistryImpl();
-        scheduler = new BrainScheduler(this, registry);
 
+        speciesRegistry = new SpeciesRegistry(this);
+        speciesRegistry.reload();
+
+        registry = new BrainRegistryImpl(speciesRegistry);
+        scheduler = new BrainScheduler(this, registry);
         getServer().getPluginManager().registerEvents(new BrainLifecycleListener(registry), this);
         scheduler.start();
 
@@ -51,7 +55,8 @@ public final class EntityBrain extends JavaPlugin {
         EBLog.info("Brain core ready (" + restored + " brain(s) restored).");
 
         CommandManager commands = new CommandManager(this);
-        commands.add(new ReloadCommand(this));
+        commands.add(new ReloadCommand(this, speciesRegistry));
+        commands.add(new SpeciesCommand(speciesRegistry));
         commands.add(new BrainsCommand(registry));
 
         if(ItemsAdderDetector.isAvailable()) {
