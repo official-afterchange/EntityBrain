@@ -1,5 +1,6 @@
 package ch.afterchange.entityBrain.integration.itemsadder;
 
+import ch.afterchange.entityBrain.core.BrainRegistryImpl;
 import ch.afterchange.entityBrain.util.EBLog;
 import dev.lone.itemsadder.api.CustomEntity;
 import org.bukkit.Bukkit;
@@ -10,8 +11,13 @@ import org.bukkit.entity.Player;
 public class HostPrototype {
 
     private static CustomEntity current;
+    private static BrainRegistryImpl registry;
 
     private HostPrototype() {}
+
+    public static void init(BrainRegistryImpl brainRegistry) {
+        registry = brainRegistry;
+    }
 
     public static String spawn(Player player, String id) {
         if (!ItemsAdderReadyListener.isReady()) return "ItemsAdder not ready yet.";
@@ -20,6 +26,8 @@ public class HostPrototype {
         CustomEntity ce = CustomEntity.spawn(id, player.getLocation());
         if (ce == null) return "Spawn failed";
         current = ce;
+
+        registry.attachNew(ce.getEntity(), "test");
 
         Entity base = ce.getEntity();
         EBLog.info("Spawned " + ce.getNamespacedID()
