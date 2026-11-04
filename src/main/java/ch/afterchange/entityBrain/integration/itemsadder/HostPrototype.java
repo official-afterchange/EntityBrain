@@ -2,6 +2,7 @@ package ch.afterchange.entityBrain.integration.itemsadder;
 
 import ch.afterchange.entityBrain.util.EBLog;
 import dev.lone.itemsadder.api.CustomEntity;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -52,5 +53,14 @@ public class HostPrototype {
                 + ", uuid=" + base.getUniqueId()
                 + ", isCustom=" + CustomEntity.isCustomEntity(base)
                 + ", byAlreadySpawned=" + (CustomEntity.byAlreadySpawned(base) != null);
+    }
+
+    public static String stripVanillaAi() {
+        if (current == null) return "No entity spawned.";
+        if (!(current.getEntity() instanceof  Mob mob)) return "Base entity is not a Mob.";
+
+        Bukkit.getMobGoals().removeAllGoals(mob);
+        mob.setTarget(null);
+        return "Vanilla goals removed.";
     }
 }

@@ -59,6 +59,11 @@ public final class PrototypeCommand implements SubCommand {
                         .executes(ctx -> {
                             CommandUtil.reply(ctx, HostPrototype.info());
                             return Command.SINGLE_SUCCESS;
+                        }))
+                .then(Commands.literal("strip")
+                        .executes(ctx -> {
+                            CommandUtil.reply(ctx, HostPrototype.stripVanillaAi());
+                            return  Command.SINGLE_SUCCESS;
                         }));
     }
 }
